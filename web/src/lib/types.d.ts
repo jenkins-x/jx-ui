@@ -5,3 +5,7 @@
 export interface Locals {
 	userid: string;
 }
+
+export interface Pipelines {
+	id: string
+}

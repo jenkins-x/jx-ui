@@ -1,4 +1,4 @@
-import type { Request } from '@sveltejs/kit';
+import type { RequestEvent } from '@sveltejs/kit';
 import type { Locals } from '$lib/types';
 
 /*
@@ -12,7 +12,7 @@ import type { Locals } from '$lib/types';
 	guarantees are made. Don't use it to organise your life.)
 */
 
-const base = 'https://api.svelte.dev';
+const base = 'http://localhost:8080';
 
 export async function api(request: Request<Locals>, resource: string, data?: {}) {
 	// user must have a cookie set

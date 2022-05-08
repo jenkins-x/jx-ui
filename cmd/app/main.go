@@ -5,17 +5,19 @@ import (
 	"context"
 	"fmt"
 	"io"
-	internal "jx-ui/internal/kube"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
 
+	internal "jx-ui/internal/kube"
+
 	"github.com/gorilla/mux"
 	"github.com/jenkins-x/jx-api/v4/pkg/client/clientset/versioned"
 	jenkinsxv1 "github.com/jenkins-x/jx-api/v4/pkg/client/clientset/versioned/typed/jenkins.io/v1"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/naming"
+	"github.com/rs/cors"
 
 	// "github.com/jenkins-x-plugins/jx-pipeline/pkg/cloud"
 	pipelineapi "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
@@ -31,7 +33,6 @@ type spaHandler struct {
 	staticPath string
 	indexPath  string
 }
-
 type Server struct {
 	// addr       string
 	server     *http.Server
@@ -258,9 +259,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	s.jxClient = jxClient.JenkinsV1().PipelineActivities("jx")
+	s.jxClient = jxClient.JenkinsV1().PipelineActivities(JXNS)
 
-	s.srClient = jxClient.JenkinsV1().SourceRepositories("jx")
+	s.srClient = jxClient.JenkinsV1().SourceRepositories(JXNS)
 
 	tknClient, err := tknclient.NewForConfig(config)
 	if err != nil {
@@ -276,8 +277,13 @@ func main() {
 
 	router := mux.NewRouter()
 	router = registerRoutes(router, s)
+	// This is only required for dev mode
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowCredentials: true,
+	})
 	s.server = &http.Server{
-		Handler:      router,
+		Handler:      c.Handler(router),
 		Addr:         "127.0.0.1:8080", // Todo: Make it configurable
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,

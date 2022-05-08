@@ -6,6 +6,7 @@ require (
 	github.com/gorilla/mux v1.7.4
 	github.com/jenkins-x/jx-api/v4 v4.3.7
 	github.com/jenkins-x/jx-helpers/v3 v3.2.9
+	github.com/rs/cors v1.8.2
 	github.com/tektoncd/pipeline v0.29.0
 	github.com/unrolled/render v1.0.3
 	k8s.io/api v0.21.4

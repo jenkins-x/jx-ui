@@ -1,4 +1,7 @@
-backend: # Builds the go binary
+clean:
+	rm -rf bin/
+
+backend: clean # Builds the go binary
 	go build -o bin/ui cmd/app/main.go
 
 frontend: # Build the frontend
