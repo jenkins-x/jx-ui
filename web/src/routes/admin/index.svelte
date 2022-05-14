@@ -54,7 +54,6 @@
     },
   ]
   function onSubmit(e) {
-    console.log('Test')
     const formData = new FormData(e.target)
     let id = pipelines.length + 1
     const data = { id }
@@ -112,8 +111,10 @@
           </svg>
         </div>
         <div>
-          <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">Repositories</p>
-          <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">100</p>
+          <a href="/repositories">
+            <p class="mb-2 text-sm font-medium text-gray-600 dark:text-gray-400">Repositories</p>
+            <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">100</p>
+          </a>
         </div>
       </div>
       <!-- Documents -->

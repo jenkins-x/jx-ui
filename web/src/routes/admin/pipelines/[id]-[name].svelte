@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="ts" context="module">
   import _i from '$lib/translator'
   import Plotly from 'plotly.js-dist-min'
   import { onMount } from 'svelte'

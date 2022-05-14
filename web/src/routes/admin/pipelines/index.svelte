@@ -1,73 +1,42 @@
-<script lang="ts">
-  import { clickOutside } from '$lib/IOEvents/click'
-  import { keydownEscape } from '$lib/IOEvents/keydown'
-
-  let isModalOpen = false
-
-  const openModal = () => {
-    isModalOpen = true
-  }
-
-  const closeModal = () => {
-    isModalOpen = false
-  }
-  let projects = [
-    {
-      id: 1,
-      name: 'Belmont high school',
-      nDoc: 100,
-      amount: 90000,
-      type: 'Public',
-      status: 'In progress',
-      startDate: '6/10/2020',
-      endDate: '6/10/2020',
-    },
-    {
-      id: 2,
-      name: 'Boston Public School',
-      nDoc: 100,
-      amount: 90000,
-      type: 'Public',
-      status: 'Completed',
-      startDate: '6/10/2020',
-      endDate: '6/10/2020',
-    },
-    {
-      id: 3,
-      name: 'Arsenal Yards',
-      nDoc: 100,
-      amount: 90000,
-      type: 'Mixed use',
-      status: 'Not started',
-      startDate: '6/10/2020',
-      endDate: '6/10/2020',
-    },
-    {
-      id: 4,
-      name: 'Revere Cinema',
-      nDoc: 100,
-      amount: 90000,
-      type: 'Private',
-      status: 'Not started',
-      startDate: '6/10/2020',
-      endDate: '6/10/2020',
-    },
-  ]
-  function onSubmit(e) {
-    console.log('Test')
-    const formData = new FormData(e.target)
-    let id = projects.length + 1
-    const data = { id }
-    for (let field of formData) {
-      const [key, value] = field
-      data[key] = value
+<script context="module">
+  // Todo: move it to endpoints
+  export async function load({ fetch }) {
+    // ToDo: Use Axios
+    const res = await fetch('http://localhost:8080/api/v1/pipelines')
+    const pipelines = await res.json()
+    if (res.ok) {
+      return {
+        props: {
+          pipelines,
+        },
+      }
     }
-    data['nDoc'] = 0
-    data['status'] = 'Not Started'
-    data['amount'] = 0
+    return {
+      status: res.status,
+      // ToDo: use new Error()
+      error: 'Could not fetch pipelines',
+    }
+  }
+</script>
 
-    projects = [...projects, data]
-    isModalOpen = false
+<script lang="ts">
+  import { isValid, formatDistanceStrict, format } from 'date-fns'
+  export let pipelines
+
+  function diffTimes(i: Date, j: Date) {
+    if (isValid(i) && isValid(j)) {
+      return formatDistanceStrict(j, i)
+    } else {
+      return ''
+    }
+  }
+
+  function displayTime(i: Date) {
+    if (isValid(i)) {
+      return format(i, 'Pp')
+    } else {
+      return ''
+    }
   }
 </script>
 
@@ -86,132 +55,56 @@
             <tr
               class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800"
             >
-              <th class="px-4 py-3">Pipelines</th>
-              <th class="px-4 py-3"></th>
-              <th class="px-4 py-3">Amount (in dollars)</th>
-              <th class="px-4 py-3">Type</th>
+              <th class="px-4 py-3">Repository</th>
+              <th class="px-4 py-3">Branch</th>
+              <th class="px-4 py-3">Build</th>
               <th class="px-4 py-3">Status</th>
-              <th class="px-4 py-3">Start Date</th>
-              <th class="px-4 py-3">End Date</th>
+              <th class="px-4 py-3">Start Time</th>
+              <th class="px-4 py-3">End Time</th>
+              <th class="px-4 py-3">Duration</th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
-            {#each projects as project}
+            {#each pipelines as pipeline}
               <tr class="text-gray-700 dark:text-gray-400">
                 <td class="px-4 py-3">
                   <div class="flex items-center text-sm">
-                    <!-- Avatar with inset shadow -->
-                    <div class="relative hidden w-8 h-8 mr-3 rounded-full md:block">
-                      <img
-                        class="object-cover w-full h-full rounded-full"
-                        src="https://images.unsplash.com/flagged/photo-1570612861542-284f4c12e75f?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=200&fit=max&ixid=eyJhcHBfaWQiOjE3Nzg0fQ"
-                        alt=""
-                        loading="lazy"
-                      />
-                      <div class="absolute inset-0 rounded-full shadow-inner" aria-hidden="true" />
-                    </div>
                     <div>
                       <a
-                        href="/projects/{project.id}-{project.name
+                        href="/pipelines/{pipeline.spec.build}-{pipeline.spec.gitRepository
                           .split(' ')
                           .join('-')
-                          .toLowerCase()}"><p class="font-semibold">{project.name}</p></a
+                          .toLowerCase()}"
+                        ><p class="font-semibold">{pipeline.spec.gitRepository}</p></a
                       >
                     </div>
                   </div>
                 </td>
-                <td class="px-4 py-3 text-sm"> {project.nDoc} </td>
-                <td class="px-4 py-3 text-sm"> {project.amount} </td>
-                <td class="px-4 py-3 text-sm"> {project.type} </td>
+                <td class="px-4 py-3 text-sm"> {pipeline.spec.gitBranch} </td>
+                <td class="px-4 py-3 text-sm"> {pipeline.spec.build} </td>
                 <td class="px-4 py-3 text-xs">
                   <span
                     class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100"
                   >
-                    {project.status}
+                    {pipeline.spec.status}
                   </span>
                 </td>
-                <td class="px-4 py-3 text-sm"> {project.startDate} </td>
-                <td class="px-4 py-3 text-sm"> {project.endDate} </td>
+                <td class="px-4 py-3 text-sm">
+                  {displayTime(Date.parse(pipeline.spec.startedTimestamp))}
+                </td>
+                <td class="px-4 py-3 text-sm">
+                  {displayTime(Date.parse(pipeline.spec.completedTimestamp))}
+                </td>
+                <td class="px-4 py-3 text-sm">
+                  {diffTimes(
+                    Date.parse(pipeline.spec.startedTimestamp),
+                    Date.parse(pipeline.spec.completedTimestamp)
+                  )}
+                </td>
               </tr>
             {/each}
           </tbody>
         </table>
-      </div>
-      <div
-        class="grid px-4 py-3 text-xs font-semibold tracking-wide text-gray-500 uppercase border-t dark:border-gray-700 bg-gray-50 sm:grid-cols-9 dark:text-gray-400 dark:bg-gray-800"
-      >
-        <span class="flex items-center col-span-3"> Showing 21-30 of 100 </span>
-        <span class="col-span-2" />
-        <!-- Pagination -->
-        <span class="flex col-span-4 mt-2 sm:mt-auto sm:justify-end">
-          <nav aria-label="Table navigation">
-            <ul class="inline-flex items-center">
-              <li>
-                <button
-                  class="px-3 py-1 rounded-md rounded-l-lg focus:outline-none focus:shadow-outline-purple"
-                  aria-label="Previous"
-                >
-                  <svg aria-hidden="true" class="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                    <path
-                      d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                      clip-rule="evenodd"
-                      fill-rule="evenodd"
-                    />
-                  </svg>
-                </button>
-              </li>
-              <li>
-                <button class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple">
-                  1
-                </button>
-              </li>
-              <li>
-                <button class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple">
-                  2
-                </button>
-              </li>
-              <li>
-                <button
-                  class="px-3 py-1 text-white transition-colors duration-150 bg-purple-600 border border-r-0 border-purple-600 rounded-md focus:outline-none focus:shadow-outline-purple"
-                >
-                  3
-                </button>
-              </li>
-              <li>
-                <button class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple">
-                  4
-                </button>
-              </li>
-              <li>
-                <span class="px-3 py-1">...</span>
-              </li>
-              <li>
-                <button class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple">
-                  8
-                </button>
-              </li>
-              <li>
-                <button class="px-3 py-1 rounded-md focus:outline-none focus:shadow-outline-purple">
-                  9
-                </button>
-              </li>
-              <li>
-                <button
-                  class="px-3 py-1 rounded-md rounded-r-lg focus:outline-none focus:shadow-outline-purple"
-                  aria-label="Next"
-                >
-                  <svg class="w-4 h-4 fill-current" aria-hidden="true" viewBox="0 0 20 20">
-                    <path
-                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                      clip-rule="evenodd"
-                      fill-rule="evenodd"
-                    />
-                  </svg>
-                </button>
-              </li>
-            </ul>
-          </nav>
-        </span>
       </div>
     </div>
   </div>
