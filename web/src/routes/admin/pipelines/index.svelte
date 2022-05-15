@@ -5,9 +5,10 @@
     const res = await fetch('http://localhost:8080/api/v1/pipelines')
     const pipelines = await res.json()
     if (res.ok) {
+      const pipelinesProcessed = pipelines.map((k) => k.spec)
       return {
         props: {
-          pipelines,
+          pipelinesProcessed,
         },
       }
     }
@@ -21,23 +22,71 @@
 
 <script lang="ts">
   import { isValid, formatDistanceStrict, format } from 'date-fns'
-  export let pipelines
+  import { Grid, GridOptions } from 'ag-grid-community'
 
-  function diffTimes(i: Date, j: Date) {
+  import 'ag-grid-community/dist/styles/ag-grid.css'
+  import 'ag-grid-community/dist/styles/ag-theme-alpine-dark.css'
+  import { onMount } from 'svelte'
+  export let pipelinesProcessed
+
+  function diffTimes(i: number, j: number) {
     if (isValid(i) && isValid(j)) {
       return formatDistanceStrict(j, i)
-    } else {
-      return ''
     }
+    return ''
   }
 
-  function displayTime(i: Date) {
+  function displayTime(i: number) {
     if (isValid(i)) {
       return format(i, 'Pp')
     } else {
       return ''
     }
   }
+
+  let gridOptions: GridOptions = {
+    defaultColDef: {
+      editable: true,
+      enableValue: true,
+      sortable: true,
+      resizable: true,
+      filter: true,
+      flex: 1,
+      minWidth: 100,
+    },
+    columnDefs: [
+      { headerName: 'Repository', field: 'gitRepository' },
+      { headerName: 'Branch', field: 'gitBranch' },
+      { headerName: 'Build', field: 'build' },
+      { headerName: 'Status', field: 'status' },
+      {
+        headerName: 'Start Time',
+        field: 'startedTimestamp',
+        valueFormatter: (params) => displayTime(Date.parse(params.data.startedTimestamp)),
+      },
+      {
+        headerName: 'End Time',
+        field: 'completedTimestamp',
+        valueFormatter: (params) => displayTime(Date.parse(params.data.completedTimestamp)),
+      },
+      {
+        headerName: 'Duration',
+        field: 'duration',
+        valueFormatter: (params) =>
+          diffTimes(
+            Date.parse(params.data.startedTimestamp),
+            Date.parse(params.data.completedTimestamp)
+          ),
+      },
+    ],
+    rowData: pipelinesProcessed,
+    pagination: true,
+    paginationAutoPageSize: true,
+  }
+  onMount(() => {
+    var eGridDiv = document.querySelector<HTMLElement>('#pipeline-grid')
+    new Grid(eGridDiv, gridOptions)
+  })
 </script>
 
 <svelte:head>
@@ -48,64 +97,8 @@
   <div class="container px-6 mx-auto grid">
     <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">Pipelines</h2>
     <!-- New Table -->
-    <div class="w-full overflow-hidden rounded-lg shadow-xs">
-      <div class="w-full overflow-x-auto">
-        <table class="w-full whitespace-no-wrap">
-          <thead>
-            <tr
-              class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800"
-            >
-              <th class="px-4 py-3">Repository</th>
-              <th class="px-4 py-3">Branch</th>
-              <th class="px-4 py-3">Build</th>
-              <th class="px-4 py-3">Status</th>
-              <th class="px-4 py-3">Start Time</th>
-              <th class="px-4 py-3">End Time</th>
-              <th class="px-4 py-3">Duration</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
-            {#each pipelines as pipeline}
-              <tr class="text-gray-700 dark:text-gray-400">
-                <td class="px-4 py-3">
-                  <div class="flex items-center text-sm">
-                    <div>
-                      <a
-                        href="/pipelines/{pipeline.spec.build}-{pipeline.spec.gitRepository
-                          .split(' ')
-                          .join('-')
-                          .toLowerCase()}"
-                        ><p class="font-semibold">{pipeline.spec.gitRepository}</p></a
-                      >
-                    </div>
-                  </div>
-                </td>
-                <td class="px-4 py-3 text-sm"> {pipeline.spec.gitBranch} </td>
-                <td class="px-4 py-3 text-sm"> {pipeline.spec.build} </td>
-                <td class="px-4 py-3 text-xs">
-                  <span
-                    class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100"
-                  >
-                    {pipeline.spec.status}
-                  </span>
-                </td>
-                <td class="px-4 py-3 text-sm">
-                  {displayTime(Date.parse(pipeline.spec.startedTimestamp))}
-                </td>
-                <td class="px-4 py-3 text-sm">
-                  {displayTime(Date.parse(pipeline.spec.completedTimestamp))}
-                </td>
-                <td class="px-4 py-3 text-sm">
-                  {diffTimes(
-                    Date.parse(pipeline.spec.startedTimestamp),
-                    Date.parse(pipeline.spec.completedTimestamp)
-                  )}
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
+    <div class="w-screen h-screen overflow-hidden rounded-lg shadow-xs">
+      <div id="pipeline-grid" class="h-3/4 w-3/4 ag-theme-alpine-dark" />
     </div>
   </div>
 </main>
