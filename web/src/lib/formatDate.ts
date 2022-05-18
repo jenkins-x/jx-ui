@@ -7,9 +7,9 @@ export function diffTimes(i: number, j: number): string {
   return ''
 }
 
-export function displayTime(i: number): string {
-  if (isValid(i)) {
-    return format(i, 'Pp')
+export function displayTime(date: number, displayFormat: string = 'Pp'): string {
+  if (isValid(date)) {
+    return format(date, displayFormat)
   }
   return ''
 }

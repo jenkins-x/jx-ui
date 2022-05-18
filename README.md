@@ -7,15 +7,42 @@ The aim is to initially mimic everything that octant does.
 
 ## Development
 
-- Install a chrome plugin to disable CORS (not at all recommended for production)
 - Build the go binary: `make backend`
-- Run the binary: `./bin/ui`
+- Run the binary in one terminal: `./bin/ui`
 - In another terminal, navigate to the `web` directory and start the front end server:
-  ```
+
+  ```bash
   cd web
+  npm install
   npm run start
   ```
+
 - This should open a browser tab at localhost:3000
+
+### Testing
+
+#### Backend
+
+TBA
+
+#### Frontend
+
+We use the following libraries for testing
+
+- To test simple typescript functions, we use vitest
+- To test rendering components, we use testing-library/svelte
+
+To run vitest, execute
+
+```bash
+npm run test
+```
+
+To get a coverage report, run
+
+```bash
+npm run coverage
+```
 
 ## Production
 

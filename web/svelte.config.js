@@ -29,6 +29,14 @@ const config = {
           $icon: resolve('./node_modules/svelte-bootstrap-icons/lib'),
         },
       },
+      test: {
+        environment: 'jsdom',
+        deps: {
+          inline: ['date-fns'],
+        },
+        globals: true,
+        setupFiles: ['src/setupTests.ts'],
+      },
     },
   },
 }
