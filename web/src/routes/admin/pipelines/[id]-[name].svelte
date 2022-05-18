@@ -45,7 +45,7 @@
     Plotly.newPlot('heatmap', data)
     Plotly.newPlot('progress-bar', projectProgess, layout)
   })
-  const { id, name } = { ...$page.params }
+  // const { id, name } = { ...$page.params }
 </script>
 
 <svelte:head>
