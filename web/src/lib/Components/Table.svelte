@@ -10,7 +10,6 @@
   onMount(() => {
     var eGridDiv = document.querySelector<HTMLElement>(`#${tableId}`)
     new Grid(eGridDiv, gridOptions)
-    console.log(gridOptions)
   })
 </script>
 

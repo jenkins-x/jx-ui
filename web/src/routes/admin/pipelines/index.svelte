@@ -21,7 +21,7 @@
 </script>
 
 <script lang="ts">
-  import { diffTimes, displayTime } from '$lib/utility'
+  import { diffTimes, displayTime } from '$lib/formatDate'
   import Table from '$lib/Components/Table.svelte'
   import type { GridOptions } from 'ag-grid-community'
   export let pipelinesProcessed
