@@ -21,11 +21,8 @@
 </script>
 
 <script lang="ts">
-  import { onMount } from 'svelte'
-  import { Grid, GridOptions } from 'ag-grid-community'
-
-  import 'ag-grid-community/dist/styles/ag-grid.css'
-  import 'ag-grid-community/dist/styles/ag-theme-alpine-dark.css'
+  import type { GridOptions } from 'ag-grid-community'
+  import Table from '$lib/Components/Table.svelte'
   export let repositoriesProcessed
 
   let gridOptions: GridOptions = {
@@ -46,10 +43,6 @@
     pagination: true,
     paginationAutoPageSize: true,
   }
-  onMount(() => {
-    var eGridDiv = document.querySelector<HTMLElement>('#repo-grid')
-    new Grid(eGridDiv, gridOptions)
-  })
 </script>
 
 <svelte:head>
@@ -61,7 +54,7 @@
     <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">Repositories</h2>
     <!-- New Table -->
     <div class="w-screen h-screen overflow-hidden rounded-lg shadow-xs">
-      <div id="repo-grid" class="h-3/4 w-3/4 ag-theme-alpine-dark" />
+      <Table tableId="repo-grid" {gridOptions} />
     </div>
   </div>
 </main>
