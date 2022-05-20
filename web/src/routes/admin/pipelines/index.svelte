@@ -39,7 +39,10 @@
     columnDefs: [
       { headerName: 'Repository', field: 'gitRepository' },
       { headerName: 'Branch', field: 'gitBranch' },
-      { headerName: 'Build', field: 'build' },
+      {
+        headerName: 'Build',
+        field: 'build',
+      },
       { headerName: 'Status', field: 'status' },
       {
         headerName: 'Start Time',
