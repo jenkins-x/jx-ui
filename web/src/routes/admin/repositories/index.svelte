@@ -23,6 +23,7 @@
 <script lang="ts">
   import type { GridOptions } from 'ag-grid-community'
   import Table from '$lib/Components/Table.svelte'
+  import { HTMLInColumnCell } from '$lib/cellRenderer'
   export let repositoriesProcessed
 
   let gridOptions: GridOptions = {
@@ -37,7 +38,14 @@
     columnDefs: [
       { headerName: 'Org', field: 'org' },
       { headerName: 'Provider Name', field: 'providerName' },
-      { headerName: 'Repo', field: 'repo' },
+      {
+        headerName: 'Repo',
+        field: 'repo',
+        cellRenderer: (params) => {
+          let keyData = params.data.repo
+          return HTMLInColumnCell(params.data.url, params.data.repo)
+        },
+      },
     ],
     rowData: repositoriesProcessed,
     pagination: true,
