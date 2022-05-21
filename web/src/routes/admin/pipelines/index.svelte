@@ -24,17 +24,15 @@
   import { diffTimes, displayTime } from '$lib/formatDate'
   import Table from '$lib/Components/Table.svelte'
   import type { GridOptions } from 'ag-grid-community'
+  import { HTMLInColumnCell } from '$lib/cellRenderer'
   export let pipelinesProcessed
 
   let gridOptions: GridOptions = {
     defaultColDef: {
-      editable: true,
-      enableValue: true,
       sortable: true,
       resizable: true,
       filter: true,
       flex: 1,
-      minWidth: 100,
     },
     columnDefs: [
       { headerName: 'Repository', field: 'gitRepository' },
@@ -42,6 +40,9 @@
       {
         headerName: 'Build',
         field: 'build',
+        cellRenderer: (params) => {
+          return HTMLInColumnCell(`/pipelines/${params.data.gitOwner}/${params.data.gitRepository}/${params.data.gitBranch}/${params.data.build}`, params.data.build)
+        },
       },
       { headerName: 'Status', field: 'status' },
       {

@@ -28,7 +28,6 @@
 
   let gridOptions: GridOptions = {
     defaultColDef: {
-      editable: true,
       sortable: true,
       resizable: true,
       filter: true,

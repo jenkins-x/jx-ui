@@ -14,12 +14,14 @@ import (
 	internal "jx-ui/internal/kube"
 
 	"github.com/gorilla/mux"
+	"github.com/jenkins-x-plugins/jx-pipeline/pkg/tektonlog"
 	"github.com/jenkins-x/jx-api/v4/pkg/client/clientset/versioned"
 	jenkinsxv1 "github.com/jenkins-x/jx-api/v4/pkg/client/clientset/versioned/typed/jenkins.io/v1"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/naming"
 	"github.com/rs/cors"
 
 	// "github.com/jenkins-x-plugins/jx-pipeline/pkg/cloud"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/jxclient"
 	pipelineapi "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	tknclient "github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
 	"github.com/unrolled/render"
@@ -36,6 +38,7 @@ type spaHandler struct {
 type Server struct {
 	// addr       string
 	server     *http.Server
+	jxIface    versioned.Interface
 	jxClient   jenkinsxv1.PipelineActivityInterface
 	srClient   jenkinsxv1.SourceRepositoryInterface
 	tknClient  tknclient.Interface
@@ -44,7 +47,7 @@ type Server struct {
 }
 
 // ToDo: make it configurable
-const JXNS = "jx"
+const defaultNamespace = "jx"
 
 func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// get the absolute path to prevent directory traversal
@@ -104,8 +107,6 @@ func (s *Server) PipelineHandler(w http.ResponseWriter, r *http.Request) {
 			// Todo: improve error handling!
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-		fmt.Println(pa.Spec)
-		fmt.Println(pa.Spec.BuildLogsURL)
 
 		s.render.JSON(w, http.StatusOK, pa) //nolint:errcheck
 	} else {
@@ -134,13 +135,64 @@ func (s *Server) PipelineHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// PipelineLogHandler returns the logs for a given pipeline
+func (s *Server) PipelineLogHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
+	vars := mux.Vars(r)
+	owner := vars["owner"]
+	repo := vars["repo"]
+	branch := vars["branch"]
+	build := vars["build"]
+	name := naming.ToValidName(owner + "-" + repo + "-" + branch + "-" + build)
+
+	logger := tektonlog.TektonLogger{
+		JXClient:     s.jxIface,
+		TektonClient: s.tknClient,
+		KubeClient:   s.kubeClient,
+		Namespace:    defaultNamespace,
+	}
+
+	pa, err := s.jxClient.
+		Get(context.Background(), name, metav1.GetOptions{})
+	if err != nil {
+		// Todo: improve error handling!
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	filter := tektonlog.BuildPodInfoFilter{
+		Owner:      owner,
+		Repository: repo,
+		Branch:     branch,
+		Build:      build,
+	}
+
+	_, _, prMap, err := logger.GetTektonPipelinesWithActivePipelineActivity(ctx, &filter)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	prList := prMap[name]
+
+	logs := []string{}
+
+	for line := range logger.GetRunningBuildLogs(ctx, pa, prList, name) {
+		logs = append(logs, line.Line)
+	}
+	// Read for archived logs if builds are not running
+	for line := range logger.StreamPipelinePersistentLogs(pa.Spec.BuildLogsURL) {
+		logs = append(logs, line.Line)
+	}
+
+	s.render.JSON(w, http.StatusOK, logs)
+}
+
 // PipelineHandler function
 // func (s *Server) PipelineDeleteHandler(w http.ResponseWriter, r *http.Request) {
 // 	vars := mux.Vars(r)
 // 	name := vars["name"]
 // 	err := s.jxClient.
 // 		JenkinsV1().
-// 		PipelineActivities(JXNS).
+// 		PipelineActivities().
 // 		Delete(context.Background(), name, metav1.DeleteOptions{})
 // 	if err != nil {
 // 		// Todo: improve error handling!
@@ -161,7 +213,7 @@ func (s *Server) StageLogHandler(w http.ResponseWriter, r *http.Request) {
 	// Not all pods are labelled by jx ... need to look!
 	podList, err := s.kubeClient.
 		CoreV1().
-		Pods(JXNS).
+		Pods(defaultNamespace).
 		List(context.Background(), metav1.ListOptions{LabelSelector: "tekton.dev/pipelineRun=" + name})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -189,7 +241,7 @@ func (s *Server) StageLogHandler(w http.ResponseWriter, r *http.Request) {
 func getPodContainers(podName string, client kubernetes.Interface) []string {
 	pod, err := client.
 		CoreV1().
-		Pods(JXNS).
+		Pods(defaultNamespace).
 		Get(context.Background(), podName, metav1.GetOptions{})
 	if err != nil {
 		panic(err)
@@ -207,7 +259,7 @@ func getPodContainers(podName string, client kubernetes.Interface) []string {
 func getStepLogs(podName, containerName string, client kubernetes.Interface) string {
 	req := client.
 		CoreV1().
-		Pods(JXNS).
+		Pods(defaultNamespace).
 		GetLogs(podName, &v1.PodLogOptions{Container: containerName})
 	podLogs, err := req.Stream(context.Background())
 	if err != nil {
@@ -238,6 +290,7 @@ func (s *Server) RepositoriesHandler(w http.ResponseWriter, r *http.Request) {
 func registerRoutes(router *mux.Router, server *Server) *mux.Router {
 	router.HandleFunc("/api/v1/pipelines", server.PipelinesHandler)
 	router.HandleFunc("/api/v1/pipelines/{owner}/{repo}/{branch}/{build}", server.PipelineHandler).Methods("GET", "POST")
+	router.HandleFunc("/api/v1/logs/{owner}/{repo}/{branch}/{build}", server.PipelineLogHandler)
 	router.HandleFunc("/api/v1/stages/{name}/logs", server.StageLogHandler)
 	router.HandleFunc("/api/v1/repositories", server.RepositoriesHandler)
 	spa := spaHandler{staticPath: "web/build", indexPath: "index.html"}
@@ -259,9 +312,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	s.jxClient = jxClient.JenkinsV1().PipelineActivities(JXNS)
+	s.jxClient = jxClient.JenkinsV1().PipelineActivities(defaultNamespace)
 
-	s.srClient = jxClient.JenkinsV1().SourceRepositories(JXNS)
+	s.srClient = jxClient.JenkinsV1().SourceRepositories(defaultNamespace)
 
 	tknClient, err := tknclient.NewForConfig(config)
 	if err != nil {
@@ -274,6 +327,11 @@ func main() {
 		panic(err.Error())
 	}
 	s.kubeClient = kubeClient
+
+	s.jxIface, err = jxclient.LazyCreateJXClient(s.jxIface)
+	if err != nil {
+		fmt.Println("failed to create jx client")
+	}
 
 	router := mux.NewRouter()
 	router = registerRoutes(router, s)
