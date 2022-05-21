@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	internal "jx-ui/internal/kube"
@@ -20,7 +21,6 @@ import (
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/naming"
 	"github.com/rs/cors"
 
-	// "github.com/jenkins-x-plugins/jx-pipeline/pkg/cloud"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/jxclient"
 	pipelineapi "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	tknclient "github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
@@ -137,7 +137,80 @@ func (s *Server) PipelineHandler(w http.ResponseWriter, r *http.Request) {
 
 // PipelineLogHandler returns the logs for a given pipeline
 func (s *Server) PipelineLogHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		fmt.Println("response writer does not implement http flusher")
+	}
+
 	ctx := context.Background()
+	vars := mux.Vars(r)
+	owner := vars["owner"]
+	repo := vars["repo"]
+	branch := vars["branch"]
+	build := vars["build"]
+
+	paName := fmt.Sprintf("%s-%s-%s-%s",
+		naming.ToValidName(owner),
+		naming.ToValidName(repo),
+		naming.ToValidName(branch),
+		build)
+
+	baseName := fmt.Sprintf("%s/%s/%s #%s",
+		naming.ToValidName(owner),
+		naming.ToValidName(repo),
+		naming.ToValidName(branch),
+		strings.ToLower(build))
+
+	logger := tektonlog.TektonLogger{
+		JXClient:     s.jxIface,
+		TektonClient: s.tknClient,
+		KubeClient:   s.kubeClient,
+		Namespace:    defaultNamespace,
+	}
+
+	pa, err := s.jxClient.
+		Get(context.Background(), paName, metav1.GetOptions{})
+	if err != nil {
+		// Todo: improve error handling!
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	triggerContext := pa.Spec.Context
+	name := fmt.Sprintf("%s %s", baseName, naming.ToValidName(triggerContext))
+
+	filter := tektonlog.BuildPodInfoFilter{
+		Owner:      owner,
+		Repository: repo,
+		Branch:     branch,
+		Build:      build,
+	}
+
+	_, _, prMap, err := logger.GetTektonPipelinesWithActivePipelineActivity(ctx, &filter)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	prList := prMap[name]
+
+	for k := range logger.GetRunningBuildLogs(ctx, pa, prList, name) {
+		select {
+		case <-r.Context().Done():
+			fmt.Fprintf(w, ": nothing to sent\n\n")
+			return
+		default:
+			fmt.Fprintf(w, "data: %s\n\n", k.Line)
+			flusher.Flush()
+		}
+	}
+}
+
+// PipelineLogHandler returns the logs for a given pipeline
+func (s *Server) PipelineArchivedLogHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	owner := vars["owner"]
 	repo := vars["repo"]
@@ -159,25 +232,8 @@ func (s *Server) PipelineLogHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	filter := tektonlog.BuildPodInfoFilter{
-		Owner:      owner,
-		Repository: repo,
-		Branch:     branch,
-		Build:      build,
-	}
-
-	_, _, prMap, err := logger.GetTektonPipelinesWithActivePipelineActivity(ctx, &filter)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	prList := prMap[name]
-
 	logs := []string{}
 
-	for line := range logger.GetRunningBuildLogs(ctx, pa, prList, name) {
-		logs = append(logs, line.Line)
-	}
 	// Read for archived logs if builds are not running
 	for line := range logger.StreamPipelinePersistentLogs(pa.Spec.BuildLogsURL) {
 		logs = append(logs, line.Line)
@@ -291,6 +347,7 @@ func registerRoutes(router *mux.Router, server *Server) *mux.Router {
 	router.HandleFunc("/api/v1/pipelines", server.PipelinesHandler)
 	router.HandleFunc("/api/v1/pipelines/{owner}/{repo}/{branch}/{build}", server.PipelineHandler).Methods("GET", "POST")
 	router.HandleFunc("/api/v1/logs/{owner}/{repo}/{branch}/{build}", server.PipelineLogHandler)
+	router.HandleFunc("/api/v1/logs_archived/{owner}/{repo}/{branch}/{build}", server.PipelineArchivedLogHandler)
 	router.HandleFunc("/api/v1/stages/{name}/logs", server.StageLogHandler)
 	router.HandleFunc("/api/v1/repositories", server.RepositoriesHandler)
 	spa := spaHandler{staticPath: "web/build", indexPath: "index.html"}
