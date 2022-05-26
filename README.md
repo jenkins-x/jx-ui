@@ -31,6 +31,7 @@ We use the following libraries for testing
 
 - To test simple typescript functions, we use vitest
 - To test rendering components, we use testing-library/svelte
+- To run End-to-End tests we use Playwright.
 
 To run vitest, execute
 
@@ -42,6 +43,12 @@ To get a coverage report, run
 
 ```bash
 npm run coverage
+```
+
+To perform E2E (End-To-End) tests, run
+
+```bash
+npm run playwright
 ```
 
 ## Production
