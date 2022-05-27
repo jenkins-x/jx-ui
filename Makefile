@@ -7,6 +7,7 @@ backend: clean # Builds the go binary
 frontend: # Build the frontend
 	npm install --prefix web
 	npm run build --prefix web
+all: backend frontend
 
 .PHONY: lint
 lint: ## Lint the code
