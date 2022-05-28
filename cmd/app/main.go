@@ -200,7 +200,6 @@ func (s *Server) PipelineLogHandler(w http.ResponseWriter, r *http.Request) {
 	for k := range logger.GetRunningBuildLogs(ctx, pa, prList, name) {
 		select {
 		case <-r.Context().Done():
-			fmt.Fprintf(w, ": nothing to sent\n\n")
 			return
 		default:
 			fmt.Fprintf(w, "data: %s\n\n", k.Line)
