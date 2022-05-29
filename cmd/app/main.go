@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	internal "jx-ui/internal/kube"
 
@@ -397,10 +396,8 @@ func main() {
 		AllowCredentials: true,
 	})
 	s.server = &http.Server{
-		Handler:      c.Handler(router),
-		Addr:         "127.0.0.1:8080", // Todo: Make it configurable
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
+		Handler: c.Handler(router),
+		Addr:    "127.0.0.1:8080", // Todo: Make it configurable
 	}
 
 	log.Fatal(s.server.ListenAndServe())
