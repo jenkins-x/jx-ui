@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	internal "jx-ui/internal/kube"
@@ -86,6 +87,10 @@ func (s *Server) PipelinesHandler(w http.ResponseWriter, r *http.Request) {
 		// Todo: improve error handling!
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+
+	sort.Slice(pa.Items, func(i, j int) bool {
+		return pa.Items[j].Spec.StartedTimestamp.Before(pa.Items[i].Spec.StartedTimestamp)
+	})
 
 	s.render.JSON(w, http.StatusOK, pa.Items) //nolint:errcheck
 }
@@ -237,7 +242,7 @@ func (s *Server) PipelineArchivedLogHandler(w http.ResponseWriter, r *http.Reque
 		logs = append(logs, line.Line)
 	}
 
-	s.render.JSON(w, http.StatusOK, logs)
+	s.render.JSON(w, http.StatusOK, logs) //nolint:errcheck
 }
 
 // PipelineHandler function
