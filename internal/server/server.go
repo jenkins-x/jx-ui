@@ -19,8 +19,9 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 )
 
+// Server struct holds the external dependencies requires for running the UI backend
 type Server struct {
-	// addr       string
+	addr       string
 	server     *http.Server
 	jxIface    versioned.Interface
 	jxClient   jenkinsxv1.PipelineActivityInterface
@@ -79,6 +80,11 @@ func (s *Server) Run() error {
 		s.namespace = "jx"
 	}
 
+	s.addr = os.Getenv("UI_ADDR")
+	if s.addr == "" {
+		s.addr = "localhost:8080"
+	}
+
 	jxClient, err := versioned.NewForConfig(config)
 	if err != nil {
 		return err
@@ -113,7 +119,7 @@ func (s *Server) Run() error {
 	})
 	s.server = &http.Server{
 		Handler: c.Handler(router),
-		Addr:    "127.0.0.1:8080", // Todo: Make it configurable
+		Addr:    s.addr,
 	}
 
 	err = s.server.ListenAndServe()
