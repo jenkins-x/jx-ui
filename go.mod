@@ -9,7 +9,6 @@ require (
 	github.com/rs/cors v1.8.2
 	github.com/tektoncd/pipeline v0.29.0
 	github.com/unrolled/render v1.0.3
-	k8s.io/api v0.21.4
 	k8s.io/apimachinery v0.21.4
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 )
@@ -72,6 +71,7 @@ require (
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
+	k8s.io/api v0.21.4 // indirect
 )
 
 require (
