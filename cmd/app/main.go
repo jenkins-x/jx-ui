@@ -1,11 +1,8 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -25,7 +22,6 @@ import (
 	pipelineapi "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	tknclient "github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
 	"github.com/unrolled/render"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -261,79 +257,6 @@ func (s *Server) PipelineArchivedLogHandler(w http.ResponseWriter, r *http.Reque
 // 	s.render.JSON(w, http.StatusOK, "pipeline "+ name + " stopped") //nolint:errcheck
 // }
 
-// StageLogHandler function
-func (s *Server) StageLogHandler(w http.ResponseWriter, r *http.Request) {
-	// Todo: This is incredibly inefficient, but works, best to switch to SSE/Websockets
-	vars := mux.Vars(r)
-	name := vars["name"]
-
-	// ToDo
-	// Seems like the only way to get all the pods/tasks for a pipeline run
-	// Not all pods are labelled by jx ... need to look!
-	podList, err := s.kubeClient.
-		CoreV1().
-		Pods(defaultNamespace).
-		List(context.Background(), metav1.ListOptions{LabelSelector: "tekton.dev/pipelineRun=" + name})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	if len(podList.Items) < 1 {
-		s.render.JSON(w, http.StatusNotFound, http.StatusText(http.StatusNotFound)) //nolint:errcheck
-	}
-
-	logSteps := make(map[string][]string)
-	var logStep string
-	for k := range podList.Items {
-		podName := podList.Items[k].GetName()
-		taskLabel := podList.Items[k].Labels["tekton.dev/pipelineTask"]
-		list := getPodContainers(podName, s.kubeClient)
-		for k1 := range list {
-			logStep = getStepLogs(podName, list[k1], s.kubeClient)
-			logSteps[taskLabel] = append(logSteps[taskLabel], logStep)
-		}
-	}
-
-	s.render.JSON(w, http.StatusOK, logSteps) //nolint:errcheck
-}
-
-func getPodContainers(podName string, client kubernetes.Interface) []string {
-	pod, err := client.
-		CoreV1().
-		Pods(defaultNamespace).
-		Get(context.Background(), podName, metav1.GetOptions{})
-	if err != nil {
-		panic(err)
-	}
-
-	containerList := make([]string, 0)
-
-	for k := range pod.Spec.Containers {
-		containerList = append(containerList, pod.Spec.Containers[k].Name)
-	}
-
-	return containerList
-}
-
-func getStepLogs(podName, containerName string, client kubernetes.Interface) string {
-	req := client.
-		CoreV1().
-		Pods(defaultNamespace).
-		GetLogs(podName, &v1.PodLogOptions{Container: containerName})
-	podLogs, err := req.Stream(context.Background())
-	if err != nil {
-		panic(err)
-	}
-	defer podLogs.Close()
-	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, podLogs)
-	if err != nil {
-		panic(err)
-	}
-	str := buf.String()
-	return str
-}
-
 // RepositoriesHandler function
 func (s *Server) RepositoriesHandler(w http.ResponseWriter, r *http.Request) {
 	repo, err := s.srClient.
@@ -351,26 +274,25 @@ func registerRoutes(router *mux.Router, server *Server) *mux.Router {
 	router.HandleFunc("/api/v1/pipelines/{owner}/{repo}/{branch}/{build}", server.PipelineHandler).Methods("GET", "POST")
 	router.HandleFunc("/api/v1/logs/{owner}/{repo}/{branch}/{build}", server.PipelineLogHandler)
 	router.HandleFunc("/api/v1/logs_archived/{owner}/{repo}/{branch}/{build}", server.PipelineArchivedLogHandler)
-	router.HandleFunc("/api/v1/stages/{name}/logs", server.StageLogHandler)
 	router.HandleFunc("/api/v1/repositories", server.RepositoriesHandler)
 	spa := spaHandler{staticPath: "web/build", indexPath: "index.html"}
 	router.PathPrefix("/").Handler(spa)
 	return router
 }
 
-func main() {
+func run() error {
 	s := &Server{}
 	s.render = render.New(render.Options{
 		DisableHTTPErrorRendering: true,
 	})
 	config, err := internal.GetKubeConfig()
 	if err != nil {
-		log.Fatal("Cannot get kubeconfig")
+		return err
 	}
 
 	jxClient, err := versioned.NewForConfig(config)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	s.jxClient = jxClient.JenkinsV1().PipelineActivities(defaultNamespace)
 
@@ -378,19 +300,19 @@ func main() {
 
 	tknClient, err := tknclient.NewForConfig(config)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	s.tknClient = tknClient
 
 	kubeClient, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(err.Error())
+		return err
 	}
 	s.kubeClient = kubeClient
 
 	s.jxIface, err = jxclient.LazyCreateJXClient(s.jxIface)
 	if err != nil {
-		fmt.Println("failed to create jx client")
+		return err
 	}
 
 	router := mux.NewRouter()
@@ -405,5 +327,16 @@ func main() {
 		Addr:    "127.0.0.1:8080", // Todo: Make it configurable
 	}
 
-	log.Fatal(s.server.ListenAndServe())
+	err = s.server.ListenAndServe()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func main() {
+	if err := run(); err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		os.Exit(1)
+	}
 }
