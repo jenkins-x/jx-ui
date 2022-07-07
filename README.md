@@ -14,7 +14,7 @@ The aim is to initially mimic everything that octant does.
   ```bash
   cd web
   npm install
-  npm run start
+  npm run dev
   ```
 
 - This should open a browser tab at localhost:3000
