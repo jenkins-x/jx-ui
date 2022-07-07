@@ -41,7 +41,10 @@
         headerName: 'Build',
         field: 'build',
         cellRenderer: (params) => {
-          return HTMLInColumnCell(`/pipelines/${params.data.gitOwner}/${params.data.gitRepository}/${params.data.gitBranch}/${params.data.build}`, params.data.build)
+          return HTMLInColumnCell(
+            `/pipelines/${params.data.gitOwner}/${params.data.gitRepository}/${params.data.gitBranch}/${params.data.build}`,
+            params.data.build
+          )
         },
       },
       { headerName: 'Status', field: 'status' },

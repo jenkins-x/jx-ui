@@ -1,6 +1,7 @@
 import preprocess from 'svelte-preprocess'
 import { resolve } from 'path'
 import adapter from '@sveltejs/adapter-static'
+import { configDefaults } from 'vitest/config'
 
 let routeFolder = process.env.ROUTE_FOLDER
 
@@ -36,6 +37,7 @@ const config = {
         },
         globals: true,
         setupFiles: ['src/setupTests.ts'],
+        exclude: [...configDefaults.exclude, 'e2e/*'],
       },
     },
   },
