@@ -15,11 +15,11 @@
 
     <!-- Cards -->
     <div class="grid gap-6 mb-8 md:grid-cols-1 xl:grid-cols-3">
-      <Card title="Pipelines" num="50" link="/pipelines" />
+      <Card title="Pipelines" num={50} link="/pipelines" />
       <!-- Users -->
-      <Card title="Repositories" num="20" link="/repositories" />
+      <Card title="Repositories" num={20} link="/repositories" />
       <!-- Documents -->
-      <Card title="External secrets" num="12" link="/repositories" />
+      <Card title="External secrets" num={12} link="/repositories" />
     </div>
     <div class="px-4 py-3 mb-8 rounded-lg flex flex-row-reverse">
       <div
