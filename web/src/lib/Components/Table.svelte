@@ -13,4 +13,4 @@
   })
 </script>
 
-<div id={tableId} class="h-3/4 w-3/4 ag-theme-alpine-dark" />
+<div id={tableId} class="h-3/4 w-9/10 ag-theme-alpine-dark" />

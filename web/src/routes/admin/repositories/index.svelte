@@ -56,11 +56,11 @@
   <title>Repositories</title>
 </svelte:head>
 
-<main class="h-full overflow-y-auto">
-  <div class="container px-6 mx-auto grid">
+<main class="h-full overflow-hidden">
+  <div class="container px-6 mx-auto grid overflow-hidden">
     <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">Repositories</h2>
     <!-- New Table -->
-    <div class="w-screen h-screen overflow-hidden rounded-lg shadow-xs">
+    <div class="w-full h-screen overflow-hidden rounded-lg shadow-xs">
       <Table tableId="repo-grid" {gridOptions} />
     </div>
   </div>
