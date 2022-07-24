@@ -11,6 +11,16 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type pipelinesRes struct {
+	GitOwner      string
+	GitRepository string
+	GitBranch     string
+	Build         string
+	Status        string
+	StartTime     *metav1.Time
+	EndTime       *metav1.Time
+}
+
 // PipelinesHandler function
 func (s *Server) PipelinesHandler(w http.ResponseWriter, r *http.Request) {
 	pa, err := s.jxClient.
@@ -20,11 +30,23 @@ func (s *Server) PipelinesHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	sort.Slice(pa.Items, func(i, j int) bool {
-		return pa.Items[j].Spec.StartedTimestamp.Before(pa.Items[i].Spec.StartedTimestamp)
+	Pipelines := make([]pipelinesRes, len(pa.Items))
+
+	for k := range pa.Items {
+		Pipelines[k].GitOwner = pa.Items[k].Spec.GitOwner
+		Pipelines[k].GitRepository = pa.Items[k].Spec.GitRepository
+		Pipelines[k].GitBranch = pa.Items[k].Spec.GitBranch
+		Pipelines[k].Build = pa.Items[k].Spec.Build
+		Pipelines[k].Status = pa.Items[k].Spec.Status.String()
+		Pipelines[k].StartTime = pa.Items[k].Spec.StartedTimestamp
+		Pipelines[k].EndTime = pa.Items[k].Spec.CompletedTimestamp
+	}
+
+	sort.Slice(Pipelines, func(i, j int) bool {
+		return Pipelines[j].StartTime.Before(Pipelines[i].StartTime)
 	})
 
-	s.render.JSON(w, http.StatusOK, pa.Items) //nolint:errcheck
+	s.render.JSON(w, http.StatusOK, Pipelines) //nolint:errcheck
 }
 
 // PipelineHandler function
