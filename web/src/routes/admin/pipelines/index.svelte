@@ -23,7 +23,8 @@
   import { diffTimes, displayTime } from '$lib/formatDate'
   import Table from '$lib/Components/Table.svelte'
   import type { GridOptions } from 'ag-grid-community'
-  import { HTMLInColumnCell } from '$lib/cellRenderer'
+  import { BTNInColumnCell, HTMLInColumnCell } from '$lib/cellRenderer'
+  import { stopPipelineHandler } from './[org]/[repo]/[branch]/[build].svelte';
   export let pipelines
 
   let gridOptions: GridOptions = {
@@ -65,6 +66,20 @@
             Date.parse(params.data.StartTime),
             Date.parse(params.data.EndTime)
           ),
+      },
+      {
+        headerName: 'Action',
+        field: 'action',
+        cellRenderer: (params) => {
+          return BTNInColumnCell(
+            `${params.data.Status}`,
+            `${params.data.GitOwner}`,
+            `${params.data.GitBranch}`,
+            `${params.data.GitRepository}`,
+            `${params.data.Build}`,
+            stopPipelineHandler,
+          )
+        },
       },
     ],
     rowData: pipelines,
