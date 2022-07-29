@@ -115,6 +115,7 @@ func (s *Server) Run() error {
 	// This is only required for dev mode
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedMethods:   []string{"GET", "POST", "HEAD", "PUT"},
 		AllowCredentials: true,
 	})
 	s.server = &http.Server{

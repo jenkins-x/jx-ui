@@ -22,9 +22,7 @@
       <Card title="External secrets" num={12} link="/repositories" />
     </div>
     <div class="px-4 py-3 mb-8 rounded-lg flex flex-row-reverse">
-      <div
-        class="px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple"
-      >
+      <div class="px-4 py-2 text-sm font-medium leading-5 text-white transition-colors duration-150 bg-purple-600 border border-transparent rounded-lg active:bg-purple-600 hover:bg-purple-700 focus:outline-none focus:shadow-outline-purple">
         <a href="/pipelines"> Import a repository </a>
       </div>
     </div>
