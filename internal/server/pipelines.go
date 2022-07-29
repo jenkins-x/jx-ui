@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"sort"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/naming"
@@ -58,16 +59,11 @@ func (s *Server) PipelineHandler(w http.ResponseWriter, r *http.Request) {
 	build := vars["build"]
 	name := naming.ToValidName(owner + "-" + repo + "-" + branch + "-" + build)
 	method := r.Method
-	if method == "GET" {
-		pa, err := s.jxClient.
-			Get(context.Background(), name, metav1.GetOptions{})
-		if err != nil {
-			// Todo: improve error handling!
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
 
-		s.render.JSON(w, http.StatusOK, pa) //nolint:errcheck
-	} else {
+	switch method {
+	case "POST":
+		s.render.JSON(w, http.StatusMethodNotAllowed, nil) //nolint:errcheck
+	case "PUT":
 		pa, err := s.jxClient.
 			Get(context.Background(), name, metav1.GetOptions{})
 		if err != nil {
@@ -82,7 +78,7 @@ func (s *Server) PipelineHandler(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 
-		if pr.Status.CompletionTime == nil {
+		if strings.EqualFold(pa.Spec.Status.String(), "pending") || strings.EqualFold(pa.Spec.Status.String(), "running") {
 			pr.Spec.Status = pipelineapi.PipelineRunSpecStatusCancelled
 		}
 		_, err = s.tknClient.TektonV1beta1().PipelineRuns("jx").Update(context.Background(), pr, metav1.UpdateOptions{})
@@ -90,5 +86,14 @@ func (s *Server) PipelineHandler(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 		s.render.JSON(w, http.StatusOK, "pipeline "+name+" stopped") //nolint:errcheck
+	default:
+		pa, err := s.jxClient.
+			Get(context.Background(), name, metav1.GetOptions{})
+		if err != nil {
+			// Todo: improve error handling!
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		s.render.JSON(w, http.StatusOK, pa) //nolint:errcheck
 	}
 }
