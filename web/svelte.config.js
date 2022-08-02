@@ -20,6 +20,9 @@ const config = {
     files: {
       routes: `src/routes/${routeFolder}`,
     },
+    prerender: {
+      enabled: false,
+    },
     vite: {
       resolve: {
         alias: {
