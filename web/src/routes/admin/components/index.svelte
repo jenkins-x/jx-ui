@@ -1,5 +1,4 @@
 <script lang="ts">
-  import DocAccordion from '$lib/Components/Docs/DocAccordion.svelte'
   import DocAlert from '$lib/Components/Docs/DocAlert.svelte'
   import DocBadge from '$lib/Components/Docs/DocBadge.svelte'
   import Breadcrumb from '$lib/Components/Breadcrumb.svelte'
@@ -31,9 +30,6 @@
 <main class="h-full overflow-y-auto">
   <div class="bg-gray-50 dark:bg-gray-900 dark:text-white">
     <div class="container px-6 mx-auto grid">
-      <div class="mt-5 pb-5">
-        <DocAccordion />
-      </div>
 
       <hr />
 
