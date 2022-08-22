@@ -10,7 +10,6 @@
     )
 
     const pipeline = await res.json()
-
     if (res.ok) {
       return {
         props: {
@@ -48,6 +47,7 @@
 </script>
 
 <script lang="ts">
+  import Flowchart from '$src/lib/Components/Flowchart.svelte'
   import Modal from '$src/lib/Components/Modal.svelte'
   import ArchivedLog from '$src/lib/Components/Pipelines/ArchivedLog.svelte'
   import StreamingLog from '$src/lib/Components/Pipelines/StreamingLog.svelte'
@@ -102,14 +102,6 @@
     },
   ]
 
-  const startPipeline = () => {
-    title = "Start Pipeline"
-    msg = "Are you sure, you want to start"
-    item = name
-
-    toggleModal()
-  }
-
   const stopPipeline = () => {
     title = "Stop Pipeline"
     msg = "Are you sure, you want to stop"
@@ -148,46 +140,49 @@
 
       <Modal title={title} msg={msg} item={item} show={show} on:click={toggleModal} callbacks={callbacks}/>
 
-      <div class="grid gap-6 mb-8 md:grid-cols-3">
-        <div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
-          <ul class="list-none">
-            <li class="px-4 py-2">Pipeline activity: {name}</li>
-            <li class="px-4 py-2">Organization: {owner}</li>
-            <li class="px-4 py-2">Repository: {repository}</li>
-            <li class="px-4 py-2">Branch: {branch}</li>
-            <li class="px-4 py-2">Build: {build}</li>
-            <li class="px-4 py-2">Stages: {steps.length}</li>
-            <li class="px-4 py-2">Steps: 6</li>
-          </ul>
+      <div class="flex justify-center flex-col xl:flex-row">
+        <div class="m-0 w-full gap-6 mb-8 md:grid-cols-3 xl:mx-4 xl:w-1/2">
+          <div class="mb-4 min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+            <ul class="list-none">
+              <li class="px-4 py-2">Pipeline activity: {name}</li>
+              <li class="px-4 py-2">Organization: {owner}</li>
+              <li class="px-4 py-2">Repository: {repository}</li>
+              <li class="px-4 py-2">Branch: {branch}</li>
+              <li class="px-4 py-2">Build: {build}</li>
+              <li class="px-4 py-2">Stages: {steps.length}</li>
+              <li class="px-4 py-2">Steps: 6</li>
+            </ul>
+          </div>
+          <div class="mb-4 min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+            <ul class="list-none">
+              <li class="px-4 py-2">Context: {context}</li>
+              <li class="px-4 py-2">
+                Namespace: {pipeline.metadata.namespace} (Should this be shown?)
+              </li>
+              <li class="px-4 py-2">Author: release</li>
+              <li class="px-4 py-2">Commit: release</li>
+              <li class="px-4 py-2">Event: release</li>
+            </ul>
+          </div>
+          <div class="mb-4 min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+            <ul class="list-none">
+              <li class="px-4 py-2">Status: {status}</li>
+              <li class="px-4 py-2">
+                Started: {displayTime(Date.parse(startedTimestamp))}
+              </li>
+              <li class="px-4 py-2">
+                Finished: {displayTime(Date.parse(completedTimestamp))}
+              </li>
+              <li class="px-4 py-2">
+                Duration: {diffTimes(Date.parse(completedTimestamp), Date.parse(startedTimestamp))}
+              </li>
+              {#if status == 'failed'}
+                <li class="px-4 py-2">Failed reason:</li>
+              {/if}
+            </ul>
+          </div>
         </div>
-        <div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
-          <ul class="list-none">
-            <li class="px-4 py-2">Context: {context}</li>
-            <li class="px-4 py-2">
-              Namespace: {pipeline.metadata.namespace} (Should this be shown?)
-            </li>
-            <li class="px-4 py-2">Author: release</li>
-            <li class="px-4 py-2">Commit: release</li>
-            <li class="px-4 py-2">Event: release</li>
-          </ul>
-        </div>
-        <div class="min-w-0 p-4 bg-white rounded-lg shadow-xs dark:bg-gray-800">
-          <ul class="list-none">
-            <li class="px-4 py-2">Status: {status}</li>
-            <li class="px-4 py-2">
-              Started: {displayTime(Date.parse(startedTimestamp))}
-            </li>
-            <li class="px-4 py-2">
-              Finished: {displayTime(Date.parse(completedTimestamp))}
-            </li>
-            <li class="px-4 py-2">
-              Duration: {diffTimes(Date.parse(completedTimestamp), Date.parse(startedTimestamp))}
-            </li>
-            {#if status == 'failed'}
-              <li class="px-4 py-2">Failed reason:</li>
-            {/if}
-          </ul>
-        </div>
+        <Flowchart data={pipeline}/>
       </div>
       <!-- Repeat this block for all stages -->
       {#if status == 'Running' || status == 'pending'}
