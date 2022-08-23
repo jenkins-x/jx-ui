@@ -130,16 +130,17 @@
         <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">Pipeline details</h2>
 
         {#if status.toLowerCase() === "pending" || status.toLowerCase() === "running"}
-          <div class="flex  text-purple-600 dark:text-purple-300">
+          <div class="flex items-center">
             <button
-              class="rounded-md focus:outline-none focus:shadow-outline-purple-500"
+              class="px-4 h-10 w-46 flex items-center rounded-full border border-red-600 bg-red-300 text-red-600 focus:outline-none focus:shadow-outline-red-500"
               aria-label="Toggle color mode"
               on:click={stopPipeline}
             >
-              <svg class="ml-4 w-10 h-10" aria-hidden="true" fill="currentColor" viewBox="0 0 512 512">
+              <svg class="w-8 h-8" aria-hidden="true" fill="currentColor" viewBox="0 0 512 512">
                 <!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. -->
                 <path d="M0 256C0 114.6 114.6 0 256 0C397.4 0 512 114.6 512 256C512 397.4 397.4 512 256 512C114.6 512 0 397.4 0 256zM175 208.1L222.1 255.1L175 303C165.7 312.4 165.7 327.6 175 336.1C184.4 346.3 199.6 346.3 208.1 336.1L255.1 289.9L303 336.1C312.4 346.3 327.6 346.3 336.1 336.1C346.3 327.6 346.3 312.4 336.1 303L289.9 255.1L336.1 208.1C346.3 199.6 346.3 184.4 336.1 175C327.6 165.7 312.4 165.7 303 175L255.1 222.1L208.1 175C199.6 165.7 184.4 165.7 175 175C165.7 184.4 165.7 199.6 175 208.1V208.1z"/>
               </svg>
+              <p class="ml-2 text-lg">Stop Pipeline</p>
             </button>
           </div>
         {/if}
