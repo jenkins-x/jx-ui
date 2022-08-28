@@ -25,7 +25,7 @@ const config = {
       routes: `src/routes/${routeFolder}`,
     },
     prerender: {
-      enabled: false,
+      default: false,
     },
     vite: {
       resolve: {
