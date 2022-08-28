@@ -1,8 +1,12 @@
+ORG := jenkins-x
+BINARY_NAME := jx-ui
+LATEST := latest
+
 clean:
-	rm -rf bin/
+	rm -rf build/
 
 backend: clean # Builds the go binary
-	go build -o bin/ui cmd/app/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/linux/$(BINARY_NAME) cmd/app/main.go
 
 frontend: # Build the frontend
 	npm install --prefix web
@@ -13,3 +17,5 @@ all: backend frontend
 lint: ## Lint the code
 	./hack/gofmt.sh
 	./hack/linter.sh
+build.docker.local: all
+	docker build -t ${ORG}/${BINARY_NAME}:${LATEST} .

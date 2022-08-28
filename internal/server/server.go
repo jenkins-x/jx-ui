@@ -82,7 +82,7 @@ func (s *Server) Run() error {
 
 	s.addr = os.Getenv("UI_ADDR")
 	if s.addr == "" {
-		s.addr = "localhost:8080"
+		s.addr = "localhost:9200"
 	}
 
 	jxClient, err := versioned.NewForConfig(config)

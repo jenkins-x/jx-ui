@@ -2,12 +2,12 @@
   // Todo: move it to endpoints
   export async function load({ fetch }) {
     // ToDo: Use Axios
-    const res = await fetch('http://localhost:8080/api/v1/pipelines')
+    const res = await fetch('http://localhost:9200/api/v1/pipelines')
     const pipelines = await res.json()
     if (res.ok) {
       return {
         props: {
-          pipelines
+          pipelines,
         },
       }
     }
@@ -24,7 +24,7 @@
   import Table from '$lib/Components/Table.svelte'
   import type { GridOptions } from 'ag-grid-community'
   import { BTNInColumnCell, HTMLInColumnCell } from '$lib/cellRenderer'
-  import { stopPipelineHandler } from './[org]/[repo]/[branch]/[build].svelte';
+  import { stopPipelineHandler } from './[org]/[repo]/[branch]/[build].svelte'
   export let pipelines
 
   let gridOptions: GridOptions = {
@@ -62,10 +62,7 @@
         headerName: 'Duration',
         field: 'duration',
         valueFormatter: (params) =>
-          diffTimes(
-            Date.parse(params.data.StartTime),
-            Date.parse(params.data.EndTime)
-          ),
+          diffTimes(Date.parse(params.data.StartTime), Date.parse(params.data.EndTime)),
       },
       {
         headerName: 'Action',
@@ -77,7 +74,7 @@
             `${params.data.GitBranch}`,
             `${params.data.GitRepository}`,
             `${params.data.Build}`,
-            stopPipelineHandler,
+            stopPipelineHandler
           )
         },
       },
