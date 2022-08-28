@@ -1,5 +1,6 @@
 # binaries
-bin/ui
+build
 
 # IDEs
 .vscode
+.idea

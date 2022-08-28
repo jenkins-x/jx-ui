@@ -16,7 +16,11 @@ const config = {
 
   kit: {
     // hydrate the <div id="svelte"> element in src/app.html
-    adapter: adapter(),
+    adapter: adapter({
+      pages: 'build',
+      assets: 'build',
+      fallback: 'index.html',
+    }),
     files: {
       routes: `src/routes/${routeFolder}`,
     },

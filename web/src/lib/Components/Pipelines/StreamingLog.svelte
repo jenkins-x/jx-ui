@@ -13,7 +13,7 @@
   onMount(() => {
     const ansi_up = new AnsiUp()
     const eventSource = new EventSource(
-      `http://localhost:8080/api/v1/logs/${owner}/${repository}/${branch}/${build}`
+      `http://localhost:9200/api/v1/logs/${owner}/${repository}/${branch}/${build}`
     )
     eventSource.onopen = function (e) {
       console.log('Connection Opened')

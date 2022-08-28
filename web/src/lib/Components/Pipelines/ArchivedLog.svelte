@@ -11,7 +11,7 @@
   onMount(async () => {
     const ansi_up = new AnsiUp()
     const res2 = await fetch(
-      `http://localhost:8080/api/v1/logs_archived/${owner}/${repository}/${branch}/${build}`
+      `http://localhost:9200/api/v1/logs_archived/${owner}/${repository}/${branch}/${build}`
     )
     logs = await res2.json()
     log_processed = logs.map((log) => ansi_up.ansi_to_html(log))

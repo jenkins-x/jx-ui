@@ -5,12 +5,12 @@
 This is a full feature UI for JenkinsX 3.
 The aim is to initially mimic everything that octant does.
 
-# Set up
+## Set up
 
 ## Development
 
 - Build the go binary: `make backend`
-- Run the binary in one terminal: `./bin/ui`
+- Run the binary in one terminal: `./build/linux/jx-ui`
 - In another terminal, navigate to the `web` directory and start the front end server:
 
   ```bash
@@ -55,19 +55,23 @@ npm run playwright
 
 ## Production
 
-- Build production optimized frontend build: `make frontend`
-- Build the go binary: `make backend`
-- Run the binary: `./bin/ui`
-- Navigate to localhost:8080 (8080 is the default port)
+- Build backend and frontend: `make all`
+- Run the binary: `./build/linux/jx-ui`
+- Navigate to localhost:9200 (9200 is the default port)
 
-# Features
+## Docker build locally
+
+- To build the docker image, run `build.docker.local`
+- Run `docker run --net host -v $HOME/.kube:/root/.kube --rm --name jx-ui jenkins-x/jx-ui:latest`
+
+## Features
 
 - Pipeline views - Step by step view of the logs
 - Raw logs
 - Start pipelines from the UI
 - Responsive UI
 
-# Nice to have
+## Nice to have
 
 - Tests!
 - Audit logging
@@ -75,11 +79,11 @@ npm run playwright
 - Graph view of the pipeline
 - SSO
 
-# Credits
+## Credits
 
 Uses https://github.com/daison12006013/sveltekit-starter as the base template:
 
-# Contributions
+## Contributions
 
 Always welcomed!
 Todo - Contribution guide

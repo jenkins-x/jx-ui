@@ -12,7 +12,7 @@ import type { Locals } from '$lib/types'
 	guarantees are made. Don't use it to organise your life.)
 */
 
-const base = 'http://localhost:8080'
+const base = 'http://localhost:9200'
 
 export async function api(request: Request<Locals>, resource: string, data?: {}) {
   // user must have a cookie set
