@@ -28,25 +28,6 @@ const config = {
     prerender: {
       default: false,
     },
-    vite: {
-      resolve: {
-        alias: {
-          $src: resolve('./src'),
-          $stores: resolve('./src/stores'),
-          $assets: resolve('./src/assets'),
-          $icon: resolve('./node_modules/svelte-bootstrap-icons/lib'),
-        },
-      },
-      test: {
-        environment: 'jsdom',
-        deps: {
-          inline: ['date-fns'],
-        },
-        globals: true,
-        setupFiles: ['src/setupTests.ts'],
-        exclude: [...configDefaults.exclude, 'e2e/*'],
-      },
-    },
   },
 }
 
