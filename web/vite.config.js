@@ -13,6 +13,9 @@ const config = {
       $icon: resolve('./node_modules/svelte-bootstrap-icons/lib'),
     },
   },
+  server: {
+    port: 3000,
+  },
 }
 
 export default config
