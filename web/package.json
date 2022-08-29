@@ -2,9 +2,9 @@
   "name": "Jenkins X UI",
   "version": "0.0.1",
   "scripts": {
-    "dev": "ROUTE_FOLDER=admin svelte-kit dev",
-    "build": "ROUTE_FOLDER=admin svelte-kit build",
-    "preview": "svelte-kit preview",
+    "dev": "ROUTE_FOLDER=admin vite dev",
+    "build": "ROUTE_FOLDER=admin vite build",
+    "preview": "vite preview",
     "lint": "prettier --check --plugin-search-dir=. . && eslint --ignore-path .gitignore .",
     "format": "prettier --write --plugin-search-dir=. .",
     "storybook": "start-storybook -p 6006",
@@ -23,7 +23,7 @@
     "@storybook/addon-svelte-csf": "^2.0.3",
     "@storybook/svelte": "^6.4.22",
     "@sveltejs/adapter-static": "1.0.0-next.30",
-    "@sveltejs/kit": "1.0.0-next.335",
+    "@sveltejs/kit": "1.0.0-next.375",
     "@tailwindcss/forms": "^0.4.0",
     "@tailwindcss/line-clamp": "^0.3.1",
     "@tailwindcss/typography": "^0.5.2",
@@ -50,7 +50,8 @@
     "tslib": "^2.0.0",
     "typescript": "^4.0.0",
     "vitest": "^0.12.6",
-    "vitest-svelte-kit": "^0.0.6"
+    "vitest-svelte-kit": "^0.0.6",
+    "vite": "^3.0.8"
   },
   "type": "module",
   "dependencies": {
