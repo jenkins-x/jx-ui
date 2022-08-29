@@ -12,4 +12,5 @@ it('returns only text with link if link is invalid', () => {
   expect(output).toContain('Jenkins X')
   // ToDo: test that it does not contain a <a> tag
   expect(output).not.toContain('http')
+  expect(output).not.toContain('<a href="" >Jenkins X</a>')
 })
