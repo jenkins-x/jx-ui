@@ -1,31 +1,11 @@
-<script context="module">
-  // Todo: move it to endpoints
-  export async function load({ fetch }) {
-    // ToDo: Use Axios
-    const res = await fetch('http://localhost:9200/api/v1/pipelines')
-    const pipelines = await res.json()
-    if (res.ok) {
-      return {
-        props: {
-          pipelines,
-        },
-      }
-    }
-    return {
-      status: res.status,
-      // ToDo: use new Error()
-      error: 'Could not fetch pipelines',
-    }
-  }
-</script>
-
 <script lang="ts">
   import { diffTimes, displayTime } from '$lib/formatDate'
   import Table from '$lib/Components/Table.svelte'
   import type { GridOptions } from 'ag-grid-community'
   import { BTNInColumnCell, HTMLInColumnCell } from '$lib/cellRenderer'
-  import { stopPipelineHandler } from './[org]/[repo]/[branch]/[build].svelte'
-  export let pipelines
+  import { stopPipelineHandler } from '$lib/Components/Pipelines/StopPipeline'
+  
+  export let data
 
   let gridOptions: GridOptions = {
     defaultColDef: {
@@ -79,7 +59,7 @@
         },
       },
     ],
-    rowData: pipelines,
+    rowData: data.pipelines,
     pagination: true,
     paginationAutoPageSize: true,
   }

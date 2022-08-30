@@ -1,63 +1,14 @@
-<script context="module">
-  import { onMount } from 'svelte'
-  // Todo: move it to endpoints
-  export async function load({ fetch, params }) {
-    // ToDo: Use Axios
-
-    const { org, repo, branch, build } = params
-    const res = await fetch(
-      `http://localhost:9200/api/v1/pipelines/${org}/${repo}/${branch}/${build}`
-    )
-
-    const pipeline = await res.json()
-    if (res.ok) {
-      return {
-        props: {
-          pipeline,
-          org,
-          repo,
-          branch,
-          build,
-        },
-      }
-    }
-    return {
-      status: res.status,
-      // ToDo: use new Error()
-      error: 'Could not fetch pipelines',
-    }
-  }
-
-  export const stopPipelineHandler = async (params) => {
-    const { owner, repository, branch, build } = params
-    const res = await fetch(
-      `http://localhost:9200/api/v1/pipelines/${owner}/${repository}/${branch}/${build}`,
-      {
-        method: 'PUT',
-      }
-    )
-
-    const result = await res.json()
-
-    // TODO: improve error handling (@rajatgupta24)
-    if (result) {
-      console.log('pipeline has successfully stopped')
-    } else {
-      console.log('some error occured, pipeline is not stopped')
-    }
-  }
-</script>
-
 <script lang="ts">
   import Flowchart from '$src/lib/Components/Flowchart.svelte'
   import Modal from '$src/lib/Components/Modal.svelte'
   import ArchivedLog from '$src/lib/Components/Pipelines/ArchivedLog.svelte'
   import StreamingLog from '$src/lib/Components/Pipelines/StreamingLog.svelte'
+  import { stopPipelineHandler } from '$src/lib/Components/Pipelines/StopPipeline'
 
   import { diffTimes, displayTime } from '$src/lib/formatDate'
   import { fromUnixTime } from 'date-fns'
 
-  export let pipeline
+  export let data
 
   let {
     spec: {
@@ -72,7 +23,7 @@
       status,
     },
     metadata: { name, namespace },
-  } = pipeline
+  } = data.pipeline
 
   let show = false
   let title = ''
@@ -117,7 +68,7 @@
   <title>{'Pipeline build'}</title>
 </svelte:head>
 
-{#if pipeline}
+{#if data.pipeline}
   <main class="h-full pb-16 overflow-y-auto">
     <div class="container px-6 mx-auto grid">
       <div class="flex justify-between align-baseline">
@@ -163,7 +114,7 @@
             <ul class="list-none">
               <li class="px-4 py-2">Context: {context}</li>
               <li class="px-4 py-2">
-                Namespace: {pipeline.metadata.namespace} (Should this be shown?)
+                Namespace: {data.pipeline.metadata.namespace} (Should this be shown?)
               </li>
               <li class="px-4 py-2">Author: release</li>
               <li class="px-4 py-2">Commit: release</li>
@@ -188,7 +139,7 @@
             </ul>
           </div>
         </div>
-        <Flowchart data={pipeline} />
+        <Flowchart data={data.pipeline} />
       </div>
       <!-- Repeat this block for all stages -->
       {#if status == 'Running' || status == 'pending'}

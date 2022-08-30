@@ -25,7 +25,6 @@
     }
     eventSource.onerror = (e) => {
       console.log('Connection error')
-      console.log(e)
     }
   })
 </script>
