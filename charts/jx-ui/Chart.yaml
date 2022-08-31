@@ -1,0 +1,9 @@
+apiVersion: v1
+name: jx-ui
+description: Official Jenkins X UI
+icon: https://raw.githubusercontent.com/jenkins-x/jenkins-x-website/master/images/logo/jenkinsx-icon-color.svg
+home: https://github.com/jenkins-x/jx-ui
+version: 0.0.1
+appVersion: latest
+sources:
+- https://github.com/jenkins-x/jx-ui
