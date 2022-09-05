@@ -25,6 +25,13 @@ spec:
           resources: {}
         - name: release-binary
           resources: {}
+        - image: node:16.17.0-slim
+          name: build-frontend
+          resources: {}
+          script: |
+            #!/bin/sh
+            apt-get update -y && apt-get install -y make
+            make frontend
         - name: build-and-push-image
           resources: {}
         - name: chart-docs
