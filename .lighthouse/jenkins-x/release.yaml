@@ -31,7 +31,7 @@ spec:
           script: |
             #!/bin/sh
             apt-get update -y && apt-get install -y make
-            make frontend
+            make CI=true DISPLAY=:99 frontend
         - name: build-and-push-image
           resources: {}
         - name: chart-docs
