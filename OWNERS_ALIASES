@@ -1,6 +1,3 @@
-aliases:
-- ankitm123
-best-approvers:
-- ankitm123
-best-reviewers:
-- ankitm123
+foreignAliases:
+- name: jx-community
+  org: jenkins-x
