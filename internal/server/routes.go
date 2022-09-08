@@ -3,6 +3,7 @@ package server
 import "github.com/gorilla/mux"
 
 func registerRoutes(router *mux.Router, server *Server) *mux.Router {
+	router.HandleFunc("/healthz", server.HealthzHandler)
 	router.HandleFunc("/api/v1/pipelines", server.PipelinesHandler)
 
 	router.HandleFunc("/api/v1/pipelines/{owner}/{repo}/{branch}/{build}", server.PipelineHandler).Methods("GET", "PUT")
