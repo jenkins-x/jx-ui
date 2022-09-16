@@ -141,7 +141,6 @@
         </div>
         <Flowchart data={data.pipeline} />
       </div>
-      <!-- Repeat this block for all stages -->
       {#if status == 'Running' || status == 'pending'}
         <StreamingLog {owner} {repository} {branch} {build} />
       {:else}
