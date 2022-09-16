@@ -3,7 +3,9 @@ import { error } from '@sveltejs/kit'
 // Todo: move it to endpoints
 export async function load({ fetch }) {
   // ToDo: Use Axios
-  const res = await fetch('http://localhost:9200/api/v1/repositories')
+  const config = { method: 'get', headers: { origin: 'http://localhost:3000' } }
+  const request = new Request('http://localhost:9200/api/v1/repositories', config)
+  const res = await fetch(request)
   const repositories = await res.json()
   if (res.ok) {
     const repositoriesProcessed = repositories.map((k) => k.spec)
