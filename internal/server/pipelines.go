@@ -20,6 +20,7 @@ type pipelinesRes struct {
 	Status        string
 	StartTime     *metav1.Time
 	EndTime       *metav1.Time
+	Name          string
 }
 
 // PipelinesHandler function
@@ -41,6 +42,7 @@ func (s *Server) PipelinesHandler(w http.ResponseWriter, r *http.Request) {
 		Pipelines[k].Status = pa.Items[k].Spec.Status.String()
 		Pipelines[k].StartTime = pa.Items[k].Spec.StartedTimestamp
 		Pipelines[k].EndTime = pa.Items[k].Spec.CompletedTimestamp
+		Pipelines[k].Name = pa.Items[k].ObjectMeta.Name
 	}
 
 	sort.Slice(Pipelines, func(i, j int) bool {

@@ -4,8 +4,57 @@
   import type { GridOptions } from 'ag-grid-community'
   import { BTNInColumnCell, HTMLInColumnCell } from '$lib/cellRenderer'
   import { stopPipelineHandler } from '$lib/Components/Pipelines/StopPipeline'
+  import Modal from '$src/lib/Components/Modal.svelte'
   
   export let data
+
+  let show: boolean = false
+  let title: string
+  let msg: string
+  let item: string
+
+  let owner: string
+  let branch: string
+  let repository: string
+  let build: string
+
+  let callbacks = [
+    {
+      label: 'Yes',
+      action: () => {
+        stopPipelineHandler({
+          owner,
+          branch,
+          repository,
+          build,
+        })
+        show = false
+      },
+    },
+    {
+      label: 'No',
+      action: () => {
+        show = false
+      },
+    },
+  ]
+
+  const toggleModal = () => {
+    show = !show
+  }
+
+  const stopPipeline = (name, pipeline) => {
+    title = 'Stop Pipeline'
+    msg = 'Are you sure, you want to stop'
+    item = name
+
+    owner = pipeline.owner
+    branch = pipeline.branch
+    repository = pipeline.repository
+    build = pipeline.build
+
+    toggleModal()
+  }
 
   let gridOptions: GridOptions = {
     defaultColDef: {
@@ -54,7 +103,8 @@
             `${params.data.GitBranch}`,
             `${params.data.GitRepository}`,
             `${params.data.Build}`,
-            stopPipelineHandler
+            `${params.data.Name}`,
+            stopPipeline,
           )
         },
       },
@@ -73,8 +123,10 @@
   <div class="container px-6 mx-auto grid overflow-hidden">
     <h2 class="my-6 text-2xl font-semibold text-gray-700 dark:text-gray-200">Pipelines</h2>
     <!-- New Table -->
+
     <div class="w-full h-screen overflow-hidden rounded-lg shadow-xs">
       <Table tableId="pipeline-grid" {gridOptions} />
+      <Modal {title} {msg} {item} {show} on:click={toggleModal} {callbacks} />
     </div>
   </div>
 </main>
