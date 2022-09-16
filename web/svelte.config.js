@@ -23,9 +23,6 @@ const config = {
     files: {
       routes: `src/routes/${routeFolder}`,
     },
-    prerender: {
-      default: false,
-    },
   },
 }
 
