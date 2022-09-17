@@ -31,7 +31,7 @@
     "@testing-library/svelte": "^3.1.1",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
-    "autoprefixer": "^10.4.2",
+    "autoprefixer": "10.4.5",
     "babel-loader": "^8.2.5",
     "c8": "^7.11.3",
     "date-picker-svelte": "^2.0.0",
@@ -66,5 +66,8 @@
     "plotly.js-dist-min": "^2.10.0",
     "svelte-chartjs": "^1.0.1",
     "svelte-particles": "^1.42.2"
+  },
+  "overrides": {
+    "autoprefixer": "10.4.5"
   }
 }
