@@ -23,7 +23,7 @@ export const BTNInColumnCell = (status: string, owner: string, branch: string, r
       build
     }
 
-    p.addEventListener('click', clickHandler(name, pipeline));
+    p.addEventListener('click', () => clickHandler(name, pipeline));
     return p;
   }
   return null
