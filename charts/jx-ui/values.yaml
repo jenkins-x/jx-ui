@@ -116,6 +116,7 @@ role:
     resources:
     - pipelineactivities
     - pipelinestructures
+    - sourcerepositories
     verbs:
     - list
     - watch
