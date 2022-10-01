@@ -42,6 +42,8 @@ spec:
           resources: {}
         - name: build-container-build
           resources: {}
+        - image: uses:jenkins-x/jx3-pipeline-catalog/tasks/helm/pullrequest.yaml@versionStream
+          name: "build-helm-build"
   podTemplate: {}
   serviceAccountName: tekton-bot
   timeout: 1h0m0s

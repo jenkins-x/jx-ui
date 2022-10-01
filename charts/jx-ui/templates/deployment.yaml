@@ -41,7 +41,6 @@ spec:
         - name: {{ $pkey }}
           value: {{ quote $pval }}
         {{- end }}
-        {{- end }}
         {{- with .Values.pod.envFrom }}
         envFrom:
           {{- toYaml . | trim | nindent 10 }}
