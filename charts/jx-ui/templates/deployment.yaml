@@ -32,36 +32,6 @@ spec:
         {{- with .Values.image.pullPolicy }}
         imagePullPolicy: {{ . }}
         {{- end }}
-        args:
-        {{- with .Values.config.namespace }}
-        - -namespace
-        - {{ . }}
-        {{- end }}
-        {{- with .Values.config.resyncInterval }}
-        - -resync-interval
-        - {{ . }}
-        {{- end }}
-        {{- with .Values.config.archivedLogsURLTemplate }}
-        - -archived-logs-url-template
-        - {{ . }}
-        {{- end }}
-        {{- with .Values.config.archivedPipelinesURLTemplate }}
-        - -archived-pipelines-url-template
-        - {{ . }}
-        {{- end }}
-        {{- with .Values.config.archivedPipelineRunsURLTemplate }}
-        - -archived-pipelineruns-url-template
-        - {{ . }}
-        {{- end }}
-        {{- with .Values.config.pipelineTraceURLTemplate }}
-        - -pipeline-trace-url-template
-        - {{ . }}
-        {{- end }}
-        {{- with .Values.config.logLevel }}
-        - -log-level
-        - {{ . }}
-        {{- end }}
-        {{- if .Values.pod.env }}
         env:
         - name: XDG_CONFIG_HOME
           value: /home/jenkins
@@ -78,7 +48,7 @@ spec:
         {{- end }}
         ports:
         - name: http
-          containerPort: 8080
+          containerPort: 9200
         livenessProbe:
           tcpSocket:
             port: http
