@@ -13,7 +13,7 @@ func (s *Server) RepositoriesHandler(w http.ResponseWriter, r *http.Request) {
 		List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		// Todo: improve error handling!
-		panic(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
 	s.render.JSON(w, http.StatusOK, repo.Items) //nolint:errcheck

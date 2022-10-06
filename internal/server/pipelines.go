@@ -77,7 +77,7 @@ func (s *Server) PipelineHandler(w http.ResponseWriter, r *http.Request) {
 
 		pr, err := s.tknClient.TektonV1beta1().PipelineRuns("jx").Get(context.Background(), prName, metav1.GetOptions{})
 		if err != nil {
-			panic(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
 		if strings.EqualFold(pa.Spec.Status.String(), "pending") || strings.EqualFold(pa.Spec.Status.String(), "running") {
@@ -85,7 +85,7 @@ func (s *Server) PipelineHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		_, err = s.tknClient.TektonV1beta1().PipelineRuns("jx").Update(context.Background(), pr, metav1.UpdateOptions{})
 		if err != nil {
-			panic(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 		s.render.JSON(w, http.StatusOK, "pipeline "+name+" stopped") //nolint:errcheck
 	default:
