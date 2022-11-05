@@ -114,7 +114,7 @@
             <ul class="list-none">
               <li class="px-4 py-2">Context: {context}</li>
               <li class="px-4 py-2">
-                Namespace: {data.pipeline.metadata.namespace} (Should this be shown?)
+                Namespace: {data.pipeline.metadata.namespace}
               </li>
               <li class="px-4 py-2">Author: release</li>
               <li class="px-4 py-2">Commit: release</li>
