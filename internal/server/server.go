@@ -1,16 +1,15 @@
 package server
 
 import (
+	"jx-ui/internal/server/pipelines"
+	"jx-ui/internal/server/repositories"
 	"net/http"
 	"os"
 	"path/filepath"
 
-	internal "jx-ui/internal/kube"
-
 	"github.com/gorilla/mux"
 	"github.com/jenkins-x/jx-api/v4/pkg/client/clientset/versioned"
 	jenkinsxv1 "github.com/jenkins-x/jx-api/v4/pkg/client/clientset/versioned/typed/jenkins.io/v1"
-	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/jxclient"
 	"github.com/rs/cors"
 
 	tknclient "github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
@@ -21,15 +20,17 @@ import (
 
 // Server struct holds the external dependencies requires for running the UI backend
 type Server struct {
-	addr       string
-	server     *http.Server
-	jxIface    versioned.Interface
-	jxClient   jenkinsxv1.PipelineActivityInterface
-	srClient   jenkinsxv1.SourceRepositoryInterface
-	tknClient  tknclient.Interface
-	kubeClient kubernetes.Interface
-	render     *render.Render
-	namespace  string
+	router       *mux.Router
+	Addr         string
+	Server       *http.Server
+	JxIface      versioned.Interface
+	JxClient     jenkinsxv1.PipelineActivityInterface
+	TknClient    tknclient.Interface
+	KubeClient   kubernetes.Interface
+	render       *render.Render
+	Namespace    string
+	Pipeline     *pipelines.Pipeline
+	Repositories *repositories.Repositories
 }
 
 type spaHandler struct {
@@ -67,65 +68,30 @@ func (h spaHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.FileServer(http.Dir(h.staticPath)).ServeHTTP(w, r)
 }
 
-func (s *Server) Run() error {
+func NewServer() *Server {
+	s := &Server{}
+	if s.Addr == "" {
+		s.Addr = (os.Getenv("UI_ADDR"))
+		if s.Addr == "" {
+			s.Addr = (":9200")
+		}
+	}
 	s.render = render.New(render.Options{
 		DisableHTTPErrorRendering: true,
 	})
-	config, err := internal.GetKubeConfig()
-	if err != nil {
-		return err
-	}
-
-	if s.namespace == "" {
-		s.namespace = "jx"
-	}
-
-	s.addr = os.Getenv("UI_ADDR")
-	if s.addr == "" {
-		s.addr = ":9200"
-	}
-
-	jxClient, err := versioned.NewForConfig(config)
-	if err != nil {
-		return err
-	}
-	s.jxClient = jxClient.JenkinsV1().PipelineActivities(s.namespace)
-
-	s.srClient = jxClient.JenkinsV1().SourceRepositories(s.namespace)
-
-	tknClient, err := tknclient.NewForConfig(config)
-	if err != nil {
-		return err
-	}
-	s.tknClient = tknClient
-
-	kubeClient, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return err
-	}
-	s.kubeClient = kubeClient
-
-	s.jxIface, err = jxclient.LazyCreateJXClient(s.jxIface)
-	if err != nil {
-		return err
-	}
-
-	router := mux.NewRouter()
-	router = registerRoutes(router, s)
+	s.router = mux.NewRouter()
+	s.Pipeline = pipelines.NewPipeline()
+	s.Repositories = repositories.NewRepository()
+	s.router = registerRoutes(s)
 	// This is only required for dev mode
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
 		AllowedMethods:   []string{"GET", "POST", "HEAD", "PUT"},
 		AllowCredentials: true,
 	})
-	s.server = &http.Server{
-		Handler: c.Handler(router),
-		Addr:    s.addr,
+	s.Server = &http.Server{
+		Handler: c.Handler(s.router),
+		Addr:    s.Addr,
 	}
-
-	err = s.server.ListenAndServe()
-	if err != nil {
-		return err
-	}
-	return nil
+	return s
 }

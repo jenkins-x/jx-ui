@@ -16,6 +16,9 @@ all: backend frontend
 
 linux: backend
 
+test:
+	KUBECONFIG=/cluster/connections/not/allowed go test -v ./...
+
 .PHONY: lint
 lint: ## Lint the code
 	./hack/gofmt.sh

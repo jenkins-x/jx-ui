@@ -1,4 +1,4 @@
-package server
+package pipelines
 
 import (
 	"context"
@@ -7,8 +7,11 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	jenkinsxv1 "github.com/jenkins-x/jx-api/v4/pkg/client/clientset/versioned/typed/jenkins.io/v1"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/naming"
 	pipelineapi "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	tknclient "github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
+	"github.com/unrolled/render"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -23,13 +26,29 @@ type pipelinesRes struct {
 	Name          string
 }
 
+type Pipeline struct {
+	JxClient  jenkinsxv1.PipelineActivityInterface
+	TknClient tknclient.Interface
+	render    *render.Render
+	Namespace string
+}
+
+func NewPipeline() *Pipeline {
+	p := &Pipeline{}
+	p.render = render.New(render.Options{
+		DisableHTTPErrorRendering: true,
+	})
+	return p
+}
+
 // PipelinesHandler function
-func (s *Server) PipelinesHandler(w http.ResponseWriter, r *http.Request) {
-	pa, err := s.jxClient.
+func (p *Pipeline) PipelinesHandler(w http.ResponseWriter, r *http.Request) {
+	pa, err := p.JxClient.
 		List(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		// Todo: improve error handling!
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	Pipelines := make([]pipelinesRes, len(pa.Items))
@@ -49,11 +68,11 @@ func (s *Server) PipelinesHandler(w http.ResponseWriter, r *http.Request) {
 		return Pipelines[j].StartTime.Before(Pipelines[i].StartTime)
 	})
 
-	s.render.JSON(w, http.StatusOK, Pipelines) //nolint:errcheck
+	p.render.JSON(w, http.StatusOK, Pipelines) //nolint:errcheck
 }
 
 // PipelineHandler function
-func (s *Server) PipelineHandler(w http.ResponseWriter, r *http.Request) {
+func (p *Pipeline) PipelineHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	owner := vars["owner"]
 	repo := vars["repo"]
@@ -64,38 +83,46 @@ func (s *Server) PipelineHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch method {
 	case "POST":
-		s.render.JSON(w, http.StatusMethodNotAllowed, nil) //nolint:errcheck
+		p.render.JSON(w, http.StatusMethodNotAllowed, nil) //nolint:errcheck
 	case "PUT":
-		pa, err := s.jxClient.
+		pa, err := p.JxClient.
 			Get(context.Background(), name, metav1.GetOptions{})
 		if err != nil {
 			// Todo: improve error handling!
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		prName := pa.Labels["tekton.dev/pipeline"]
 
-		pr, err := s.tknClient.TektonV1beta1().PipelineRuns("jx").Get(context.Background(), prName, metav1.GetOptions{})
+		pr, err := p.TknClient.TektonV1beta1().PipelineRuns(p.Namespace).Get(context.Background(), prName, metav1.GetOptions{})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if pr == nil {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			return
 		}
 
 		if strings.EqualFold(pa.Spec.Status.String(), "pending") || strings.EqualFold(pa.Spec.Status.String(), "running") {
 			pr.Spec.Status = pipelineapi.PipelineRunSpecStatusCancelled
 		}
-		_, err = s.tknClient.TektonV1beta1().PipelineRuns("jx").Update(context.Background(), pr, metav1.UpdateOptions{})
+		_, err = p.TknClient.TektonV1beta1().PipelineRuns(p.Namespace).Update(context.Background(), pr, metav1.UpdateOptions{})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
-		s.render.JSON(w, http.StatusOK, "pipeline "+name+" stopped") //nolint:errcheck
+		p.render.JSON(w, http.StatusOK, "pipeline "+name+" stopped") //nolint:errcheck
 	default:
-		pa, err := s.jxClient.
+		pa, err := p.JxClient.
 			Get(context.Background(), name, metav1.GetOptions{})
 		if err != nil {
-			// Todo: improve error handling!
+			// Todo: Send 404 when pipeline does not exist!
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
-
-		s.render.JSON(w, http.StatusOK, pa) //nolint:errcheck
+		p.render.JSON(w, http.StatusOK, pa) //nolint:errcheck
 	}
 }
