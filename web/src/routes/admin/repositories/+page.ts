@@ -4,7 +4,7 @@ import { error } from '@sveltejs/kit'
 export async function load({ fetch }) {
   // ToDo: Use Axios
   const config = { method: 'get', headers: { origin: 'http://localhost:3000' } }
-  const request = new Request('http://localhost:9200/api/v1/repositories', config)
+  const request = new Request('/api/v1/repositories', config)
   const res = await fetch(request)
   const repositories = await res.json()
   if (res.ok) {

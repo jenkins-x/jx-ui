@@ -2,15 +2,19 @@
 
 **Experimental atm!**
 
-This is a full feature UI for JenkinsX 3.
+This is a full feature UI for Jenkins X 3.
 The aim is to initially mimic everything that octant does.
 
 ## Set up
 
 ## Development
 
-- Build the go binary: `make backend`
-- Run the binary in one terminal: `./build/linux/jx-ui`
+- Build the go binary: 
+    - Linux: `make backend`
+    - Darwin: `make backend-darwin`
+- Run the binary in one terminal: 
+    - Linux: `./build/linux/jx-ui` 
+    - Darwin: `./build/darwin/jx-ui` 
 - In another terminal, navigate to the `web` directory and start the front end server:
 
   ```bash
@@ -61,7 +65,7 @@ npm run playwright
 
 ## Docker build locally
 
-- To build the docker image, run `build.docker.local`
+- To build the docker image, run  `make build.docker.local`
 - Run `docker run --net host -v $HOME/.kube:/root/.kube --rm --name jx-ui jenkins-x/jx-ui:latest`
 
 ## Features

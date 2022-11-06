@@ -1,7 +1,8 @@
 import axios from 'axios'
+import { PUBLIC_BASE_PATH } from '$env/static/public'
 
 const instance = axios.create({
-  baseURL: 'http://localhost:9200/api/v1',
+  baseURL: `${PUBLIC_BASE_PATH}/api/v1`,
 })
 
 export default instance

@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import { default as AnsiUp } from 'ansi_up'
   import DisplayLog from './DisplayLog.svelte'
+  import { PUBLIC_BASE_PATH } from '$env/static/public'
   export let owner: string
   export let repository: string
   export let branch: string
@@ -11,7 +12,7 @@
   onMount(async () => {
     const ansi_up = new AnsiUp()
     const res2 = await fetch(
-      `http://localhost:9200/api/v1/logs_archived/${owner}/${repository}/${branch}/${build}`
+      `${PUBLIC_BASE_PATH}/api/v1/logs_archived/${owner}/${repository}/${branch}/${build}`
     )
     logs = await res2.json()
     log_processed = logs.map((log) => ansi_up.ansi_to_html(log))
