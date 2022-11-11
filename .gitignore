@@ -4,3 +4,6 @@ build
 # IDEs
 .vscode
 .idea
+
+# Storybook
+.cache

@@ -1,7 +1,8 @@
+import { PUBLIC_BASE_PATH } from '$env/static/public'
 export const stopPipelineHandler = async (params) => {
     const { owner, repository, branch, build } = params
-    const res = await fetch(
-      `http://localhost:9200/api/v1/pipelines/${owner}/${repository}/${branch}/${build}`,
+    const res = await fetch( 
+      `${PUBLIC_BASE_PATH}/api/v1/pipelines/${owner}/${repository}/${branch}/${build}`,
       {
         method: 'PUT',
       }
