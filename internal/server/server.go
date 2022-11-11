@@ -15,7 +15,7 @@ import (
 	tknclient "github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
 	"github.com/unrolled/render"
 	"k8s.io/client-go/kubernetes"
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
 // Server struct holds the external dependencies requires for running the UI backend
