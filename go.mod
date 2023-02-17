@@ -55,7 +55,7 @@ require (
 	github.com/hashicorp/go-version v1.3.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jenkins-x/go-scm v1.11.14 // indirect
-	github.com/jenkins-x/jx-kube-client/v3 v3.0.3 // indirect
+	github.com/jenkins-x/jx-kube-client/v3 v3.0.3
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/mattn/go-ieproxy v0.0.3 // indirect
 	github.com/mitchellh/copystructure v1.1.1 // indirect
@@ -123,7 +123,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/onsi/ginkgo v1.14.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/prometheus/client_golang v1.11.0 // indirect
+	github.com/prometheus/client_golang v1.11.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.30.0 // indirect
 	github.com/prometheus/procfs v0.6.0 // indirect
