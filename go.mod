@@ -55,7 +55,7 @@ require (
 	github.com/hashicorp/go-version v1.3.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jenkins-x/go-scm v1.11.14 // indirect
-	github.com/jenkins-x/jx-kube-client/v3 v3.0.3 // indirect
+	github.com/jenkins-x/jx-kube-client/v3 v3.0.3
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/mattn/go-ieproxy v0.0.3 // indirect
 	github.com/mitchellh/copystructure v1.1.1 // indirect
@@ -86,7 +86,7 @@ require (
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/emicklei/go-restful v2.15.0+incompatible // indirect
+	github.com/emicklei/go-restful v2.16.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.5.0 // indirect
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
